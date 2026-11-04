@@ -67,6 +67,15 @@ namespace P3Orbit
             }
             return result;
         }
+
+        internal bool checksumFailed(Catalog catalog)
+        {
+            var checksum = catalog == null ? null : catalog.checksum;
+            if (checksum == null || !checksum.enabled || bytes == null) return false;
+            if (checksum.byteIndex < 0 || checksum.byteIndex >= bytes.Length) return true;
+            if (checksum.to > bytes.Length) return true;
+            return checksum.Compute(bytes) != bytes[checksum.byteIndex];
+        }
     }
 
     internal sealed class App

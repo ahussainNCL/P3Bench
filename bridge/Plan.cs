@@ -39,6 +39,18 @@ namespace P3Orbit
             if (baseBlock == null) throw new InvalidOperationException("Read the config before staging changes.");
             if (baseBlock.Length != catalog.configLength)
                 throw new InvalidDataException("Base block is " + baseBlock.Length + " bytes, catalog expects " + catalog.configLength + ".");
+
+            var checksum = catalog.checksum;
+            if (checksum != null && checksum.enabled)
+            {
+                byte expected = checksum.Compute(baseBlock);
+                byte actual = baseBlock[checksum.byteIndex];
+                if (expected != actual)
+                    throw new InvalidDataException("The loaded block fails its own checksum (stored 0x" +
+                        actual.ToString("X2") + ", computed 0x" + expected.ToString("X2") +
+                        "). Re-read or import a valid block before staging changes.");
+            }
+
             if (edits == null || edits.Count == 0) throw new InvalidDataException("No edits were supplied.");
 
             byte[] work = (byte[])baseBlock.Clone();
@@ -75,7 +87,6 @@ namespace P3Orbit
                 }
             }
 
-            var checksum = catalog.checksum;
             if (checksum != null && checksum.enabled)
             {
                 byte before = work[checksum.byteIndex];

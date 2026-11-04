@@ -78,6 +78,9 @@ The public homepage at `www.p3bench.tech` is built from `web/` by the
 `Deploy P3Bench homepage` GitHub Actions workflow on each push to `main`.
 GitHub Pages hosts the frontend only; the studio's working simulator and hardware
 access require running the local bridge. The custom domain is retained in `CNAME`.
+The Pages build sets `VITE_HOSTED=true`: `/app` then shows local startup
+instructions and a link to `http://127.0.0.1:8787/app`, without polling the public
+site for bridge APIs. Local builds keep the normal studio at `/app`.
 
 1. **Simulator** mode is selected at start. Press **Read config** — you get a
    254-byte block with a valid trailing sum.

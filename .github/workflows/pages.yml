@@ -29,6 +29,8 @@ jobs:
       - name: Build frontend
         run: npm run build
         working-directory: web
+        env:
+          VITE_HOSTED: "true"
       - name: Prepare static routes and domain
         run: |
           mkdir -p web/dist/app

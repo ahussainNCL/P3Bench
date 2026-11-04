@@ -1,3 +1,16 @@
+.local-setup {
+  max-width:760px;
+  padding-top:55px;
+  padding-bottom:70px;
+}
+.local-setup>.orbit-eyebrow { margin-top:55px; }
+.local-setup h1 { font-size:clamp(30px,5vw,46px); line-height:1.15; letter-spacing:-1.5px; margin:20px 0; font-weight:600; }
+.local-setup p { color:#62666d; margin:20px 0; }
+.local-setup ol { list-style:decimal; padding-left:22px; margin:28px 0; }
+.local-setup li { padding-left:6px; margin:16px 0; }
+.local-setup li a,.local-setup>a:last-child { color:#a84815; text-decoration:underline; }
+.local-setup code { background:#f1f2f0; padding:2px 5px; border-radius:4px; }
+.local-setup .setup-note { font-size:13px; margin:24px 0; }
 .orbit-landing {
   --landing-ink:#17191c;
   --landing-muted:#62666d;

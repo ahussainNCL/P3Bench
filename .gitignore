@@ -1,0 +1,9 @@
+node_modules/
+dist/
+bin/
+obj/
+*.exe
+*.pdb
+*.user
+profiles.local.json
+shot-*.png

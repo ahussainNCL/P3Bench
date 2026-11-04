@@ -1,0 +1,92 @@
+{
+  "id": "p3.demo.synthetic",
+  "label": "P3 demo catalog (synthetic)",
+  "description": "DEMO DATA. Parameter names, offsets, encodings and defaults in this file are invented to exercise the UI. They are not decoded from any Volvo module, are not compatible with OrBit, and must not be used on a car. Replace this file with your own researched catalog.",
+  "synthetic": true,
+  "platform": "P3",
+  "configLength": 254,
+  "checksum": {
+    "enabled": true,
+    "byteIndex": 1,
+    "from": 2,
+    "to": 254
+  },
+  "groups": [
+    {
+      "id": "access",
+      "label": "Comfort & access",
+      "description": "Locking, mirrors and key behaviour.",
+      "params": [
+        { "id": "autoLock", "label": "Automatic door locking", "description": "Lock doors when the car starts moving.", "type": "bool", "offset": 12, "bit": 0, "default": true },
+        { "id": "autoUnlock", "label": "Automatic door unlocking", "description": "Unlock on key removal or gear selector to P.", "type": "bool", "offset": 12, "bit": 1, "default": true },
+        { "id": "approachLighting", "label": "Approach lighting", "description": "Courtesy light when the key approaches.", "type": "bool", "offset": 12, "bit": 2, "default": false },
+        { "id": "mirrorTiltReverse", "label": "Mirror tilt in reverse", "description": "Dip the mirror while reverse is selected.", "type": "enum", "offset": 13, "values": [ { "value": 0, "label": "Off" }, { "value": 1, "label": "Passenger side" }, { "value": 2, "label": "Both sides" } ], "default": 1 },
+        { "id": "seatMemoryOnUnlock", "label": "Seat memory on unlock", "description": "Recall the seat profile when the car is unlocked.", "type": "bool", "offset": 14, "bit": 0, "default": false },
+        { "id": "keylessEntry", "label": "Keyless entry", "description": "Passive entry on the door handles.", "type": "bool", "offset": 14, "bit": 1, "default": true },
+        { "id": "rainSensor", "label": "Rain sensor", "description": "Automatic wiper speed from the rain sensor.", "type": "bool", "offset": 14, "bit": 2, "default": true }
+      ]
+    },
+    {
+      "id": "lighting",
+      "label": "Lighting",
+      "description": "Exterior lights and assistance.",
+      "params": [
+        { "id": "drlMode", "label": "Daytime running lights", "description": "Region-specific DRL behaviour.", "type": "enum", "offset": 20, "values": [ { "value": 0, "label": "Off" }, { "value": 1, "label": "Nordic" }, { "value": 2, "label": "Standard" }, { "value": 3, "label": "Reduced" } ], "default": 1 },
+        { "id": "followMeHome", "label": "Follow-me-home delay", "description": "Time the headlights stay on after locking.", "type": "u8", "offset": 21, "min": 0, "max": 120, "scale": 1, "unit": "s", "default": 30 },
+        { "id": "corneringLights", "label": "Cornering lights", "description": "Fog light illumination when turning.", "type": "bool", "offset": 22, "bit": 0, "default": true },
+        { "id": "highBeamAssist", "label": "Active high beam", "description": "Automatic high/low beam switching.", "type": "bool", "offset": 22, "bit": 1, "default": true },
+        { "id": "rearFogAllowed", "label": "Rear fog light", "description": "Rear fog light fitted for this market.", "type": "bool", "offset": 22, "bit": 2, "default": true },
+        { "id": "tunnelDetection", "label": "Tunnel detection", "description": "Switch lights on when entering a tunnel.", "type": "bool", "offset": 22, "bit": 3, "default": false }
+      ]
+    },
+    {
+      "id": "assist",
+      "label": "Driver assistance",
+      "description": "ADAS feature configuration.",
+      "params": [
+        { "id": "accMode", "label": "Adaptive cruise control", "description": "ACC hardware/software level.", "type": "enum", "offset": 30, "values": [ { "value": 0, "label": "Not fitted" }, { "value": 1, "label": "ACC 30-200 km/h" }, { "value": 2, "label": "ACC with queue assist" } ], "default": 1 },
+        { "id": "laneKeeping", "label": "Lane keeping aid", "description": "Steering assistance to stay in lane.", "type": "bool", "offset": 31, "bit": 0, "default": true },
+        { "id": "blindSpot", "label": "Blind spot information", "description": "BLIS door mirror warning.", "type": "bool", "offset": 31, "bit": 1, "default": true },
+        { "id": "parkAssist", "label": "Park assist", "description": "Ultrasonic park assist level.", "type": "enum", "offset": 32, "values": [ { "value": 0, "label": "Off" }, { "value": 1, "label": "Rear only" }, { "value": 2, "label": "Front and rear" }, { "value": 3, "label": "Park pilot" } ], "default": 1 },
+        { "id": "speedLimitWarn", "label": "Speed warning threshold", "description": "Dashboard speed warning limit.", "type": "u8", "offset": 33, "min": 0, "max": 250, "scale": 1, "unit": "km/h", "default": 120 },
+        { "id": "driverAlert", "label": "Driver alert control", "description": "Fatigue detection using lane data.", "type": "bool", "offset": 34, "bit": 0, "default": false },
+        { "id": "citySafety", "label": "City safety", "description": "Low-speed collision avoidance.", "type": "bool", "offset": 34, "bit": 1, "default": true }
+      ]
+    },
+    {
+      "id": "climate",
+      "label": "Climate",
+      "description": "HVAC and comfort functions.",
+      "params": [
+        { "id": "autoRecirc", "label": "Automatic recirculation", "description": "Recirculate when air quality drops.", "type": "bool", "offset": 40, "bit": 0, "default": true },
+        { "id": "airQualitySensor", "label": "Air quality sensor", "description": "AQS hardware present.", "type": "bool", "offset": 40, "bit": 1, "default": true },
+        { "id": "remoteStart", "label": "Remote start", "description": "Engine start from the key or app.", "type": "bool", "offset": 41, "bit": 0, "default": false, "notes": "Market-dependent; not legal everywhere." },
+        { "id": "heatedSteeringWheel", "label": "Heated steering wheel", "description": "Steering wheel heating fitted.", "type": "bool", "offset": 41, "bit": 1, "default": false },
+        { "id": "maxDefrostTime", "label": "Max defrost duration", "description": "Maximum full-defrost runtime.", "type": "u8", "offset": 42, "min": 5, "max": 30, "scale": 1, "unit": "min", "default": 15 }
+      ]
+    },
+    {
+      "id": "chassis",
+      "label": "Chassis & steering",
+      "description": "Steering feel, dampers and monitoring.",
+      "params": [
+        { "id": "steeringFeel", "label": "Steering feel", "description": "Power steering assistance map.", "type": "enum", "offset": 50, "values": [ { "value": 0, "label": "Comfort" }, { "value": 1, "label": "Standard" }, { "value": 2, "label": "Sport" } ], "default": 1 },
+        { "id": "suspensionMode", "label": "Suspension mode", "description": "Four-C damper configuration.", "type": "enum", "offset": 51, "values": [ { "value": 0, "label": "Touring" }, { "value": 1, "label": "Sport" }, { "value": 2, "label": "Advanced" } ], "default": 0 },
+        { "id": "tpmsMode", "label": "Tyre pressure monitoring", "description": "Indirect (ABS) or direct (sensors).", "type": "enum", "offset": 52, "values": [ { "value": 0, "label": "Indirect" }, { "value": 1, "label": "Direct" } ], "default": 1 },
+        { "id": "speedoCalibration", "label": "Speedometer calibration", "description": "Pulses per kilometre used by the cluster.", "type": "u16le", "offset": 54, "min": 0, "max": 65535, "scale": 1, "default": 3200 },
+        { "id": "hillDescent", "label": "Hill descent control", "description": "Downhill speed regulation.", "type": "bool", "offset": 56, "bit": 0, "default": false }
+      ]
+    },
+    {
+      "id": "identity",
+      "label": "Identification",
+      "description": "Region and body configuration.",
+      "params": [
+        { "id": "marketCode", "label": "Market code", "description": "Four-character market identifier.", "type": "ascii", "offset": 60, "length": 4, "default": "EU" },
+        { "id": "bodyStyle", "label": "Body style", "description": "Body variant stored in config.", "type": "enum", "offset": 64, "values": [ { "value": 0, "label": "Sedan" }, { "value": 1, "label": "Estate" }, { "value": 2, "label": "Crossover" } ], "default": 0 },
+        { "id": "modelYear", "label": "Model year offset", "description": "Model year as stored in the block.", "type": "u8", "offset": 65, "min": 0, "max": 40, "scale": 1, "default": 13 },
+        { "id": "variantCode", "label": "Variant code", "description": "Internal variant string.", "type": "ascii", "offset": 66, "length": 6, "default": "P3SIM1" }
+      ]
+    }
+  ]
+}

@@ -94,6 +94,8 @@ namespace P3Orbit
         private Simulator simulator;
         private Dump dump;
         private Plan staged;
+        private readonly List<byte[]> undoStack = new List<byte[]>();
+        private const int MaxUndoHistory = 20;
 
         internal App(string root, int port)
         {
@@ -395,6 +397,7 @@ namespace P3Orbit
                 dump = null;
                 staged = null;
                 vehicleVin = null;
+                undoStack.Clear();
                 if (next == "simulator")
                 {
                     profile = profiles.Find(p => p.synthetic) ?? profiles[0];
@@ -688,7 +691,10 @@ namespace P3Orbit
                 }
 
                 Log("info", "SIMULATED write: 10 82, 27 01/27 02, 2E " + catalog.id + ", 31 01 checksum.");
+                byte[] snapshot = simulator.Read();
                 simulator.Write(staged.Block);
+                undoStack.Add(snapshot);
+                if (undoStack.Count > MaxUndoHistory) undoStack.RemoveAt(0);
                 string applied = staged.summary;
                 staged = null;
                 dump = new Dump
@@ -705,6 +711,37 @@ namespace P3Orbit
             }
         }
 
+        // Restores the simulator block from before the most recent simulated
+        // write. Hardware mode is refused for the same reason Apply is.
+        internal Dictionary<string, object> Undo()
+        {
+            lock (gate)
+            {
+                if (mode != "simulator")
+                    throw new ApiException("writes_disabled",
+                        "Hardware writes are deliberately not implemented. The bridge will not write to a vehicle.", 403);
+                if (undoStack.Count == 0)
+                    throw new ApiException("nothing_to_undo", "There is no simulated write to undo.");
+                if (simulator == null) throw new ApiException("no_simulator", "The simulator is not available.");
+
+                byte[] previous = undoStack[undoStack.Count - 1];
+                undoStack.RemoveAt(undoStack.Count - 1);
+                simulator.Write(previous);
+                staged = null;
+                dump = new Dump
+                {
+                    id = "dump_" + DateTime.UtcNow.Ticks.ToString("x", CultureInfo.InvariantCulture),
+                    source = "simulator (after undo)",
+                    provenance = "Synthetic block restored from before the last simulated write. Not vehicle data.",
+                    capturedAt = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture),
+                    vin = simulator.Vin,
+                    bytes = simulator.Read()
+                };
+                Log("info", "Undid the last simulated write; " + undoStack.Count + " undo step(s) remain.");
+                return State();
+            }
+        }
+
         // ---------- catalog / logs ----------
 
         internal Dictionary<string, object> ReloadCatalogFromDisk()
@@ -714,6 +751,7 @@ namespace P3Orbit
                 ReloadCatalog();
                 dump = null;
                 staged = null;
+                undoStack.Clear();
                 simulator = new Simulator(catalog);
                 Log("info", "Catalog reloaded; read/import the config again.");
                 return State();
@@ -728,15 +766,20 @@ namespace P3Orbit
                 Catalog candidate;
                 try { candidate = CatalogIo.Parse(text); }
                 catch (Exception ex) { throw new ApiException("bad_catalog", ex.Message, 422); }
-                if (candidate.configLength != catalog.configLength && dump != null)
-                {
-                    dump = null;
-                    staged = null;
-                    Log("info", "Block length changed; the previous read was dropped.");
-                }
+                // A staged plan belongs to the old byte mapping. Never carry it
+                // across a catalog change. The raw dump can survive when the
+                // block length is unchanged so it can be re-decoded.
+                bool lengthChanged = candidate.configLength != catalog.configLength;
+                if (lengthChanged) dump = null;
+                staged = null;
+                undoStack.Clear();
                 catalog = candidate;
                 catalogSource = "imported via web UI";
                 if (mode == "simulator") simulator = new Simulator(catalog);
+                if (lengthChanged)
+                    Log("info", "Block length changed; the previous read was dropped.");
+                else if (dump != null)
+                    Log("info", "Catalog changed; the staged plan was dropped and the block will be re-decoded.");
                 Log("info", "Catalog '" + catalog.id + "' imported (" + CountParams() + " parameters).");
                 return State();
             }

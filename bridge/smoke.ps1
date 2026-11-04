@@ -84,6 +84,22 @@ try {
   $market = ($applied.catalog.groups | Where-Object { $_.id -eq "identity" }).params | Where-Object { $_.id -eq "marketCode" } | Select-Object -First 1
   Check "second edit round-trips" { $market.display -eq "US" }
 
+  Check "apply exposes an undo step" { $applied.capabilities.undo -eq $true -and $applied.capabilities.undoDepth -eq 1 }
+  $undo = Api "POST" "/api/undo" @{}
+  Check "undo restores the pre-write block" { $undo.dump.hex -eq $read.dump.hex }
+  Check "undo empties the undo history" { $undo.capabilities.undo -eq $false -and $undo.capabilities.undoDepth -eq 0 }
+  $noUndo = ApiError "POST" "/api/undo" @{}
+  Check "refuses undo with no history" { $noUndo.code -eq "nothing_to_undo" }
+
+  $stagedAgain = Api "POST" "/api/plan" @{ edits = @(@{ id = "drlMode"; value = 3 }) }
+  Check "stages a plan for the catalog-change test" { $null -ne $stagedAgain.staged }
+  # ReadAllText keeps this a plain string; Get-Content -Raw decorates it with
+  # provider note properties that ConvertTo-Json would try to walk.
+  $catalogText = [System.IO.File]::ReadAllText((Join-Path $root "catalog\p3.demo.json"))
+  $reimport = Api "POST" "/api/catalog/import" @{ text = $catalogText }
+  Check "catalog import drops the staged plan" { $null -eq $reimport.staged }
+  Check "catalog import keeps a same-length block for re-decoding" { $reimport.dump.length -eq 254 }
+
   Write-Host "`nValidation" -ForegroundColor Cyan
   $unknown = ApiError "POST" "/api/plan" @{ edits = @(@{ id = "nope"; value = 1 }) }
   Check "rejects an unknown parameter" { $unknown.code -eq "invalid_data" }
@@ -102,16 +118,60 @@ try {
   Check "imports a 254-byte hex block" { $imported.dump.length -eq 254 -and $imported.dump.source -eq "imported" }
   Check "imported block keeps its checksum verdict" { $imported.dump.checksum.ok -eq $true }
 
+  $badEdits = ApiError "POST" "/api/plan" @{ edits = @{ id = "drlMode"; value = 2 } }
+  Check "rejects edits that are not an array" { $badEdits.code -eq "bad_edits" }
+
+  $corruptBytes = $read.dump.hex.Split(' ')
+  $corruptBytes[2] = ([Convert]::ToInt32($corruptBytes[2], 16) -bxor 0xFF).ToString('X2')
+  $corrupt = Api "POST" "/api/dump/import" @{ hex = ($corruptBytes -join ' ') }
+  Check "flags an imported block with a bad checksum" { $corrupt.dump.checksum.ok -eq $false }
+  Check "warns about the corrupt block" { ($corrupt.warnings -join " ") -match "fails its own checksum" }
+  $corruptPlan = ApiError "POST" "/api/plan" @{ edits = @(@{ id = "drlMode"; value = 2 }) }
+  Check "refuses to stage from a corrupt block" { $corruptPlan.code -eq "invalid_data" -and $corruptPlan.message -match "checksum" }
+
+  Write-Host "`nHTTP hardening" -ForegroundColor Cyan
+  $originCode = 200
+  try {
+    Invoke-WebRequest -Method POST -Uri ($base + "/api/discard") -Headers @{ Origin = "http://evil.example" } `
+      -ContentType "application/json" -Body "{}" -UseBasicParsing | Out-Null
+  } catch {
+    $originCode = [int]$_.Exception.Response.StatusCode
+  }
+  Check "rejects a foreign-origin state change" { $originCode -eq 403 }
+
+  $localOriginCode = 0
+  try {
+    Invoke-WebRequest -Method POST -Uri ($base + "/api/discard") -Headers @{ Origin = "http://localhost:5173" } `
+      -ContentType "application/json" -Body "{}" -UseBasicParsing | Out-Null
+    $localOriginCode = 200
+  } catch {
+    $localOriginCode = [int]$_.Exception.Response.StatusCode
+  }
+  Check "accepts a local-origin state change" { $localOriginCode -eq 200 }
+
+  if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
+    $traversal = & curl.exe -s -o NUL -w "%{http_code}" --path-as-is ($base + "/%2e%2e%2fREADME.md")
+    Check "refuses encoded path traversal" { $traversal.Trim() -eq "404" }
+  }
+
   Write-Host "`nHardware mode" -ForegroundColor Cyan
   $hardware = Api "POST" "/api/mode" @{ mode = "hardware" }
   Check "switches to hardware mode" { $hardware.mode -eq "hardware" }
   Check "profile advertises no read path" { $hardware.capabilities.read -eq $false -and $hardware.capabilities.reason -ne $null }
   $noRead = ApiError "POST" "/api/read" @{}
   Check "refuses to invent a config read" { $noRead.code -eq "no_read_path" }
+  $hardwareUndo = ApiError "POST" "/api/undo" @{}
+  Check "refuses simulator undo in hardware mode" { $hardwareUndo.code -eq "writes_disabled" }
 
   Write-Host "`nCatalog" -ForegroundColor Cyan
   $badCatalog = ApiError "POST" "/api/catalog/import" @{ text = '{"id":"test.bad","configLength":254,"checksum":{"enabled":true,"byteIndex":1,"from":2,"to":254},"groups":[{"id":"g","label":"G","params":[{"id":"a","label":"A","type":"bool","offset":1,"bit":0}]}]}' }
   Check "rejects a catalogue that puts a parameter on the checksum byte" { $badCatalog.code -eq "bad_catalog" }
+
+  $unknownType = ApiError "POST" "/api/catalog/import" @{ text = '{"id":"test.type","configLength":8,"groups":[{"id":"g","label":"G","params":[{"id":"a","label":"A","type":"u32","offset":0}]}]}' }
+  Check "rejects an unknown parameter type" { $unknownType.code -eq "bad_catalog" -and $unknownType.message -match "unsupported" }
+
+  $wideMax = ApiError "POST" "/api/catalog/import" @{ text = '{"id":"test.scale","configLength":8,"groups":[{"id":"g","label":"G","params":[{"id":"a","label":"A","type":"u8","offset":0,"max":300,"scale":1}]}]}' }
+  Check "rejects a value that cannot be stored at its scale" { $wideMax.code -eq "bad_catalog" -and $wideMax.message -match "cannot be stored" }
 } catch {
   $failures++
   Write-Host ("`nERROR: " + $_.Exception.Message) -ForegroundColor Red

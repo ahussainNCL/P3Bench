@@ -30,6 +30,7 @@ stays a normal web app and nothing on the network can reach a car.
 | Simulator (synthetic P3 CEM, 254-byte block, checksum) | works end to end, read → edit → plan → apply |
 | Config editor driven by a JSON catalogue | works (groups, bools, enums, u8/u16, ASCII) |
 | Byte-level plan: old/new hex per change, checksum recompute | works |
+| Undo the last simulated write (20-step history) | works, simulator only |
 | Raw hex inspector with catalogue coverage + staged diff | works |
 | Import a hex dump / import a catalogue from the UI | works |
 | J2534 driver discovery, open/close, supply voltage | works (same code path as the P3ToolClone investigation) |
@@ -85,9 +86,11 @@ access require running the local bridge. The custom domain is retained in `CNAME
 3. **Preview plan** returns the authoritative diff: which bytes change, old → new
    hex, and the recomputed checksum byte (highlighted in the Bytes tab).
 4. Type `APPLY` and apply. In simulator mode this writes to the in-memory block
-   only, then re-reads it, so you can see the round trip.
+   only, then re-reads it, so you can see the round trip. **Undo** restores the
+   block from before the last simulated write.
 5. **Export** (or `Ctrl+S`) saves block + catalogue id + warnings as JSON with
    provenance. **Import hex dump** decodes a block you captured elsewhere.
+6. **Reset** discards pending editor changes without touching the loaded block.
 
 Hardware mode adds adapter discovery (32-bit `PassThruSupport.04.04`), connect,
 voltage, tester-present and VIN. Read/write of config stays blocked until a
@@ -98,11 +101,17 @@ profile has a verified read path; the UI shows exactly why.
 The dangerous part of a tool like this is not the UI, it is the write path.
 
 * `apply` refuses anything that is not simulator mode. There is no "force" switch.
-* A plan is only applied if the block's own checksum still validates.
+* A plan is only staged from a block whose own checksum validates, and `apply`
+  checks the candidate block again before writing. A corrupt dump can still be
+  inspected but cannot be "repaired" silently.
+* Numeric edits are range-checked against the catalogue **and** against the
+  storage width after scaling, so a bad scale cannot truncate a byte.
 * Every profile carries `validated` and `synthetic` flags. Anything unproven is
   surfaced in the header and blocks writes.
 * Reading identity data (`3E`, `22 F1 90`) does not change the session, does not
   use security access and writes nothing.
+* State-changing requests from a non-local browser origin are rejected, in
+  addition to loopback-only binding. Static files are confined to `web/dist`.
 * Nothing is uploaded. The bridge binds `127.0.0.1` only.
 
 If you extend this with a real read plan: verify it on a bench module first, keep
@@ -122,6 +131,7 @@ bridge/            C# .NET Framework 4.8 (x86, J2534 v04.04)
   J2534.cs         device + ISO 15765 channel
   IsoTp.cs         ISO-TP framing (shared with P3ToolClone)
   Profile.cs       connection profiles + profiles.local.json
+  tests/           dependency-free logic tests (codec, plan, ISO-TP)
 web/               React 19 + TypeScript + Vite + Tailwind 4
   src/App.tsx      shell, polling, draft/plan state
   src/components/  sidebar, editor, plan, hex, log, dialogs
@@ -146,9 +156,29 @@ All responses are JSON. Errors are `{ ok: false, error: { code, message } }`.
 | POST | `/api/dump/import` | `{ hex }` | decode a pasted block |
 | POST | `/api/plan` | `{ edits: [{ id, value }] }` | build a write plan |
 | POST | `/api/apply` | `{ planId, confirm: "APPLY" }` | apply (simulator only) |
+| POST | `/api/undo` | – | restore the pre-write simulator block |
 | POST | `/api/discard` | – | drop the staged plan |
 | POST | `/api/catalog/reload` | – | reload `catalog/p3.demo.json` |
 | POST | `/api/catalog/import` | `{ text }` | validate and use a pasted catalogue |
+
+## Tests
+
+Run the pure-logic tests (no adapter, no vehicle):
+
+```cmd
+bridge\tests\run.cmd
+```
+
+Run the HTTP smoke test (starts its own bridge on port 8799, exercises
+simulator read → plan → apply → undo, validation, catalogue rejection, origin
+checks and path containment, then stops it):
+
+```cmd
+powershell -NoProfile -ExecutionPolicy Bypass -File bridge\smoke.ps1
+```
+
+Build the web UI with `npm run build` inside `web/`. The build runs
+`tsc --noEmit` first.
 
 ## Next steps that are safe
 

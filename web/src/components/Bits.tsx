@@ -134,7 +134,7 @@ export function Kbd({ children }: { children: ReactNode }) {
   );
 }
 
-export function Icon({ name, className }: { name: "car" | "chip" | "plug" | "bolt" | "warn" | "check" | "x" | "download" | "book" | "chevron" | "terminal" | "hex" | "list"; className?: string }) {
+export function Icon({ name, className }: { name: "car" | "chip" | "plug" | "bolt" | "warn" | "check" | "x" | "download" | "book" | "chevron" | "terminal" | "hex" | "list" | "undo"; className?: string }) {
   const paths: Record<string, ReactNode> = {
     car: (
       <>
@@ -181,6 +181,7 @@ export function Icon({ name, className }: { name: "car" | "chip" | "plug" | "bol
     ),
     hex: <path d="m12 3 7 4v10l-7 4-7-4V7l7-4ZM12 3v18M5 7l14 10M19 7 5 17" />,
     list: <path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" />,
+    undo: <path d="M9 7 4 12l5 5M4 12h11a5 5 0 0 1 0 10h-2" />,
   };
   return (
     <svg

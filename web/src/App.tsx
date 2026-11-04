@@ -400,6 +400,7 @@ P3OrbitBridge.exe --open`}
               onApply={() => void apply()}
               onDiscard={() => void act("discard", () => api.discard(), true)}
               onPreview={() => void preview()}
+              onUndo={() => void act("undo", () => api.undo(), true)}
               busy={busy}
             />
           ) : (

@@ -150,6 +150,9 @@ namespace P3Orbit
                     case "POST /discard":
                         return HttpResponse.Json(app.Discard());
 
+                    case "POST /undo":
+                        return HttpResponse.Json(app.Undo());
+
                     case "POST /catalog/reload":
                         return HttpResponse.Json(app.ReloadCatalogFromDisk());
 

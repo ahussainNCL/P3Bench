@@ -141,7 +141,14 @@ export interface State {
   dump: Dump | null;
   staged: Staged | null;
   warnings: string[];
-  capabilities: { read: boolean; apply: boolean; applyReason: string; reason?: string | null };
+  capabilities: {
+    read: boolean;
+    apply: boolean;
+    applyReason: string;
+    undo: boolean;
+    undoDepth: number;
+    reason?: string | null;
+  };
   catalogSource: string;
 }
 

@@ -12,6 +12,7 @@ interface Props {
   onApply: () => void;
   onDiscard: () => void;
   onPreview: () => void;
+  onUndo: () => void;
   busy: string | null;
 }
 
@@ -25,6 +26,7 @@ export default function PlanPanel({
   onApply,
   onDiscard,
   onPreview,
+  onUndo,
   busy,
 }: Props) {
   return (
@@ -45,6 +47,19 @@ export default function PlanPanel({
           {pending > 0 && (
             <Button size="sm" variant="outline" className="mt-4" onClick={onPreview} loading={busy === "plan"}>
               Preview plan
+            </Button>
+          )}
+          {state.capabilities.undo && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="mt-2"
+              onClick={onUndo}
+              loading={busy === "undo"}
+              icon={<Icon name="undo" className="h-3.5 w-3.5" />}
+            >
+              Undo last simulated write
+              {state.capabilities.undoDepth > 1 ? ` (${state.capabilities.undoDepth})` : ""}
             </Button>
           )}
         </div>

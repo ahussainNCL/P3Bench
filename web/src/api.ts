@@ -56,6 +56,7 @@ export const api = {
 
   plan: (edits: Edit[]) => post("/api/plan", { edits }),
   apply: (planId: string, confirm: string) => post("/api/apply", { planId, confirm }),
+  undo: () => post("/api/undo", {}),
   discard: () => post("/api/discard", {}),
 
   reloadCatalog: () => post("/api/catalog/reload", {}),

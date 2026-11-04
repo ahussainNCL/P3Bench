@@ -34,8 +34,15 @@ Loaded from `catalog/p3.demo.json` at start-up, or pasted into the UI
 Rules enforced at load:
 
 * every parameter needs a unique `id` (case-insensitive);
+* `type` must be one of `bool`, `enum`, `u8`, `u16le`, `u16be`, `ascii`;
 * `offset + length` must stay inside the block;
+* `ascii` needs a `length` of at least 1;
+* `scale` must not be negative, `min` must not be negative, and `max` must be
+  greater than `min` when set;
+* `min`/`max` must still fit the raw storage width after dividing by `scale`
+  (a `u8` with `max: 300, scale: 1` is rejected rather than truncated);
 * two parameters may share a byte only if both are `bool` **and** use different `bit`s;
+* `enum` values must be unique, labelled, and within 0–255;
 * the checksum byte must sit outside the summed range and not belong to a parameter.
 
 ## Groups and parameters

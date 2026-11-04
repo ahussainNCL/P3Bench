@@ -107,6 +107,11 @@ namespace P3Orbit
 
     internal static class CatalogIo
     {
+        private static readonly HashSet<string> KnownTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "bool", "enum", "u8", "u16le", "u16be", "ascii"
+        };
+
         internal static Catalog Load(string path)
         {
             if (!File.Exists(path)) throw new FileNotFoundException("Catalog file not found.", path);
@@ -132,6 +137,14 @@ namespace P3Orbit
             if (catalog.configLength <= 0 || catalog.configLength > 4096)
                 throw new InvalidDataException("Catalog configLength must be 1-4096.");
 
+            foreach (var group in catalog.groups)
+            {
+                if (group == null) throw new InvalidDataException("Catalog contains a null group.");
+                if (group.@params == null) continue;
+                foreach (var parameter in group.@params)
+                    if (parameter == null) throw new InvalidDataException("Group '" + group.id + "' contains a null parameter.");
+            }
+
             var wholeByte = new Dictionary<int, string>();
             var bitUse = new Dictionary<int, string>();
             var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -142,7 +155,30 @@ namespace P3Orbit
                 if (p.offset < 0 || p.offset + p.ByteLength > catalog.configLength)
                     throw new InvalidDataException(p.id + ": offset/length falls outside the config block.");
 
-                bool isBit = String.Equals(p.type, "bool", StringComparison.OrdinalIgnoreCase);
+                string type = (p.type ?? "u8").ToLowerInvariant();
+                if (!KnownTypes.Contains(type))
+                    throw new InvalidDataException(p.id + ": unsupported parameter type '" + p.type + "'.");
+                if (type == "ascii" && p.length < 1)
+                    throw new InvalidDataException(p.id + ": ascii length must be at least 1.");
+                if (p.scale < 0)
+                    throw new InvalidDataException(p.id + ": scale must not be negative.");
+
+                double scale = p.scale == 0 ? 1 : p.scale;
+                if (p.min < 0)
+                    throw new InvalidDataException(p.id + ": min must not be negative.");
+                if (p.max > 0 && p.max < p.min)
+                    throw new InvalidDataException(p.id + ": max must be greater than min.");
+
+                if (type == "u8" || type == "u16le" || type == "u16be")
+                {
+                    double rawMax = type == "u8" ? 255 : 65535;
+                    if (p.min / scale > rawMax)
+                        throw new InvalidDataException(p.id + ": min cannot be stored at this scale.");
+                    if (p.max > 0 && p.max / scale > rawMax)
+                        throw new InvalidDataException(p.id + ": max cannot be stored at this scale.");
+                }
+
+                bool isBit = type == "bool";
                 if (isBit)
                 {
                     if (p.bit < 0 || p.bit > 7) throw new InvalidDataException(p.id + ": bool bit must be 0-7.");
@@ -168,8 +204,23 @@ namespace P3Orbit
                         wholeByte[at] = p.id;
                     }
                 }
-                if (String.Equals(p.type, "enum", StringComparison.OrdinalIgnoreCase) && (p.values == null || p.values.Count == 0))
-                    throw new InvalidDataException(p.id + ": enum without values.");
+
+                if (type == "enum")
+                {
+                    if (p.values == null || p.values.Count == 0)
+                        throw new InvalidDataException(p.id + ": enum without values.");
+                    var seen = new HashSet<int>();
+                    foreach (var value in p.values)
+                    {
+                        if (value == null) throw new InvalidDataException(p.id + ": enum contains a null value.");
+                        if (value.value < 0 || value.value > 255)
+                            throw new InvalidDataException(p.id + ": enum value " + value.value + " does not fit in one byte.");
+                        if (!seen.Add(value.value))
+                            throw new InvalidDataException(p.id + ": duplicate enum value " + value.value + ".");
+                        if (String.IsNullOrWhiteSpace(value.label))
+                            throw new InvalidDataException(p.id + ": enum value " + value.value + " has no label.");
+                    }
+                }
             }
 
             if (catalog.checksum != null && catalog.checksum.enabled)
@@ -269,16 +320,14 @@ namespace P3Orbit
                 {
                     double scaled = ToDouble(value);
                     CheckRange(p, scaled);
-                    double raw = scaled / (p.scale == 0 ? 1 : p.scale);
-                    block[offset] = (byte)(int)Math.Round(raw);
+                    block[offset] = (byte)ToRaw(p, scaled, 255);
                     return;
                 }
                 case "u16le":
                 {
                     double scaled = ToDouble(value);
                     CheckRange(p, scaled);
-                    double raw = scaled / (p.scale == 0 ? 1 : p.scale);
-                    int v = (int)Math.Round(raw);
+                    int v = ToRaw(p, scaled, 65535);
                     block[offset] = (byte)(v & 0xFF);
                     block[offset + 1] = (byte)((v >> 8) & 0xFF);
                     return;
@@ -287,8 +336,7 @@ namespace P3Orbit
                 {
                     double scaled = ToDouble(value);
                     CheckRange(p, scaled);
-                    double raw = scaled / (p.scale == 0 ? 1 : p.scale);
-                    int v = (int)Math.Round(raw);
+                    int v = ToRaw(p, scaled, 65535);
                     block[offset] = (byte)((v >> 8) & 0xFF);
                     block[offset + 1] = (byte)(v & 0xFF);
                     return;
@@ -324,6 +372,19 @@ namespace P3Orbit
             double max = p.max > 0 ? p.max : (p.ByteLength > 1 ? 65535 : 255);
             if (scaled < min || scaled > max)
                 throw new InvalidDataException(p.label + ": " + scaled + " is outside " + min + ".." + max + ".");
+        }
+
+        // Converts a scaled display value to its raw unsigned integer and makes
+        // sure it still fits in the parameter's storage width. Without this a
+        // scale below 1 (or an over-wide max) would silently truncate the byte.
+        private static int ToRaw(Param p, double scaled, int max)
+        {
+            double raw = scaled / (p.scale == 0 ? 1 : p.scale);
+            double rounded = Math.Round(raw);
+            if (rounded < 0 || rounded > max)
+                throw new InvalidDataException(p.label + ": " + scaled.ToString(CultureInfo.InvariantCulture) +
+                    " cannot be encoded (raw value " + rounded.ToString(CultureInfo.InvariantCulture) + " is outside 0.." + max + ").");
+            return (int)rounded;
         }
 
         private static bool ToBool(object value)

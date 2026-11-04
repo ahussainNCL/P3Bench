@@ -73,6 +73,11 @@ Choose **Open studio** to enter the existing configuration app at `/app`.
 Direct byte-inspector links use `/app#bytes`; legacy `/#bytes` links redirect there.
 These routes work with both the Vite dev server and the bridge's static server.
 
+The public homepage at `www.p3bench.tech` is built from `web/` by the
+`Deploy P3Bench homepage` GitHub Actions workflow on each push to `main`.
+GitHub Pages hosts the frontend only; the studio's working simulator and hardware
+access require running the local bridge. The custom domain is retained in `CNAME`.
+
 1. **Simulator** mode is selected at start. Press **Read config** — you get a
    254-byte block with a valid trailing sum.
 2. Change settings. The editor tracks pending changes and never talks to the

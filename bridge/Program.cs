@@ -83,6 +83,14 @@ namespace P3Orbit
             try
             {
                 if (request.Method == "OPTIONS") return new HttpResponse { Status = 204 };
+
+                // A random web page can still POST to loopback even when CORS
+                // hides the response. Reject browser state changes that come
+                // from a non-local origin. Non-browser clients send no Origin.
+                if (request.Method != "GET" && request.Method != "HEAD" &&
+                    !String.IsNullOrEmpty(request.Origin) && !HttpServer.IsLocalOrigin(request.Origin))
+                    return HttpResponse.Error("bad_origin", "State changes are only accepted from a local page.", 403);
+
                 if (!request.Path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase) && request.Path != "/api")
                     return ServeStatic(request, webRoot);
 
@@ -238,9 +246,14 @@ namespace P3Orbit
 
             string relative = request.Path.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
             if (relative.Length == 0) relative = "index.html";
-            string candidate = Path.GetFullPath(Path.Combine(webRoot, relative));
+            string rootFull = Path.GetFullPath(webRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            string candidate = Path.GetFullPath(Path.Combine(rootFull, relative));
 
-            if (!candidate.StartsWith(Path.GetFullPath(webRoot), StringComparison.OrdinalIgnoreCase))
+            // Compare against the root plus a separator so a sibling directory
+            // such as web/dist-old cannot satisfy a prefix test.
+            string rootPrefix = rootFull + Path.DirectorySeparatorChar;
+            if (!String.Equals(candidate, rootFull, StringComparison.OrdinalIgnoreCase) &&
+                !candidate.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase))
                 return HttpResponse.Error("not_found", "Not found.", 404);
 
             if (!File.Exists(candidate) && Path.GetExtension(candidate).Length == 0)

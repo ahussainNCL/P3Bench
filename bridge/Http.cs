@@ -185,9 +185,11 @@ namespace P3Orbit
 
             int contentLength = 0;
             string rawLength;
-            if (request.Headers.TryGetValue("Content-Length", out rawLength))
-                Int32.TryParse(rawLength, NumberStyles.Integer, CultureInfo.InvariantCulture, out contentLength);
+            if (request.Headers.TryGetValue("Content-Length", out rawLength) &&
+                !Int32.TryParse(rawLength, NumberStyles.Integer, CultureInfo.InvariantCulture, out contentLength))
+                throw new InvalidDataException("Invalid Content-Length.");
 
+            if (contentLength < 0) throw new InvalidDataException("Invalid Content-Length.");
             if (contentLength > MaxBodyBytes) throw new InvalidDataException("Request body is too large.");
 
             int bodyStart = headerEnd + 4;
@@ -249,11 +251,14 @@ namespace P3Orbit
             stream.Flush();
         }
 
-        private static bool IsLocalOrigin(string origin)
+        internal static bool IsLocalOrigin(string origin)
         {
             return origin.StartsWith("http://localhost:", StringComparison.OrdinalIgnoreCase)
                 || origin.StartsWith("http://127.0.0.1:", StringComparison.OrdinalIgnoreCase)
-                || origin.Equals("http://localhost", StringComparison.OrdinalIgnoreCase);
+                || origin.StartsWith("http://[::1]:", StringComparison.OrdinalIgnoreCase)
+                || origin.Equals("http://localhost", StringComparison.OrdinalIgnoreCase)
+                || origin.Equals("http://127.0.0.1", StringComparison.OrdinalIgnoreCase)
+                || origin.Equals("http://[::1]", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string Reason(int status)
@@ -263,6 +268,7 @@ namespace P3Orbit
                 case 200: return "OK";
                 case 204: return "No Content";
                 case 400: return "Bad Request";
+                case 403: return "Forbidden";
                 case 404: return "Not Found";
                 case 405: return "Method Not Allowed";
                 case 409: return "Conflict";

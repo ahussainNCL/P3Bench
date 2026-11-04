@@ -14,6 +14,7 @@ interface Props {
   onPreview: () => void;
   onRead: () => void;
   onImportDump: () => void;
+  onResetDraft: () => void;
   busy: string | null;
 }
 
@@ -281,6 +282,7 @@ export default function ConfigPanel({
   onPreview,
   onRead,
   onImportDump,
+  onResetDraft,
   busy,
 }: Props) {
   const params = state.catalog.groups.flatMap((g) => g.params);
@@ -321,6 +323,15 @@ export default function ConfigPanel({
             )}
           >
             Pending <span className="font-mono">{pending}</span>
+          </button>
+
+          <button
+            onClick={onResetDraft}
+            disabled={pending === 0}
+            title="Discard all pending edits"
+            className="h-8 rounded border border-line bg-panel2 px-2.5 text-[11.5px] text-mut transition-colors hover:text-fg disabled:opacity-40"
+          >
+            Reset
           </button>
 
           <div className="ml-auto flex items-center gap-2">

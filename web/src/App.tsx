@@ -113,6 +113,12 @@ export default function App() {
     if (state?.staged) setStale(true);
   }
 
+  function resetDraft() {
+    setDraft({});
+    setConfirm("");
+    setStale(false);
+  }
+
   async function preview() {
     if (pendingEdits.length === 0) {
       notify("bad", "No pending changes to preview.");
@@ -154,7 +160,7 @@ export default function App() {
   }
 
   const exportJson = useCallback(() => {
-    if (!state) return;
+    if (!state || !state.dump) return;
     const payload = {
       exportedAt: new Date().toISOString(),
       app: "P3Bench web",
@@ -349,6 +355,7 @@ P3OrbitBridge.exe --open`}
               setDialogError(null);
               setDialog("dump");
             }}
+            onResetDraft={resetDraft}
             busy={busy}
           />
         </main>

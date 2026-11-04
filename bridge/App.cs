@@ -555,12 +555,19 @@ namespace P3Orbit
                     uint rawDid = Profile.ParseHex(profile.read.did, 0xFFFF);
                     if (rawDid == 0xFFFF) throw new ApiException("bad_profile", "Profile read.did is not a valid DID.");
                     byte[] data = ReadDid((ushort)rawDid, 5000);
-                    int want = profile.read.length > 0 ? profile.read.length : catalog.configLength;
-                    if (data.Length < want)
-                        throw new ApiException("short_read", "DID returned " + data.Length + " bytes, expected " + want + ".", 502);
+                    // The profile declares how many bytes the DID returns; the
+                    // catalog decides how many of them can be decoded. Require
+                    // both, then keep exactly the catalog's block length.
+                    int want = catalog.configLength;
+                    int declared = profile.read.length > 0
+                        ? profile.read.length
+                        : (profile.configLength > 0 ? profile.configLength : want);
+                    int minimum = Math.Max(want, declared);
+                    if (data.Length < minimum)
+                        throw new ApiException("short_read", "DID returned " + data.Length + " bytes, expected at least " + minimum + ".", 502);
                     bytes = new byte[want];
                     Buffer.BlockCopy(data, 0, bytes, 0, want);
-                    Log("info", "Config read via 22 " + rawDid.ToString("X4") + ": " + bytes.Length + " bytes.");
+                    Log("info", "Config read via 22 " + rawDid.ToString("X4") + ": " + bytes.Length + " bytes (DID returned " + data.Length + ").");
                 }
                 else
                 {

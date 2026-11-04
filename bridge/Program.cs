@@ -134,7 +134,17 @@ namespace P3Orbit
                         object editsRaw;
                         if (!payload.TryGetValue("edits", out editsRaw))
                             throw new ApiException("no_edits", "Send an edits array.", 422);
-                        var edits = JsonText.Parse<List<Edit>>(JsonText.Serialize(editsRaw));
+                        if (!(editsRaw is System.Collections.IList))
+                            throw new ApiException("bad_edits", "Send edits as an array of { id, value } objects.", 422);
+                        List<Edit> edits;
+                        try { edits = JsonText.Parse<List<Edit>>(JsonText.Serialize(editsRaw)); }
+                        catch (Exception ex)
+                        {
+                            throw new ApiException("bad_edits",
+                                "Send edits as an array of { id, value } objects. " + ex.Message, 422);
+                        }
+                        if (edits == null)
+                            throw new ApiException("bad_edits", "Send edits as an array of { id, value } objects.", 422);
                         return HttpResponse.Json(app.PlanEdits(edits));
                     }
 

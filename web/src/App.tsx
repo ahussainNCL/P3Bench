@@ -211,7 +211,7 @@ export default function App() {
           <Badge tone="bad">bridge offline</Badge>
           <h1 className="mt-4 text-[20px] font-semibold text-fg">The local bridge is not answering</h1>
           <p className="mt-2 text-[12.5px] leading-relaxed text-mut">{offline}</p>
-          <pre className="mt-4 overflow-x-auto rounded border border-line bg-ink px-4 py-3 font-mono text-[11.5px] leading-relaxed text-[#9fb0c1]">
+          <pre className="mt-4 overflow-x-auto rounded border border-line bg-ink px-4 py-3 font-mono text-[11.5px] leading-relaxed text-[#535d50]">
 {`cd bridge
 build.cmd
 P3OrbitBridge.exe --open`}
@@ -243,14 +243,14 @@ P3OrbitBridge.exe --open`}
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-line bg-panel px-4">
+      <header className="studio-header flex h-[76px] shrink-0 items-center gap-3 border-b border-line bg-panel px-5">
         <div className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-md border border-[#4a3524] bg-gradient-to-br from-[#2a1c12] to-[#17120d] text-acc">
-            <Icon name="hex" className="h-4 w-4" />
-          </span>
+          <a href="/" aria-label="P3Bench homepage" className="flex h-9 w-9 items-center justify-center text-fg">
+            <Icon name="hex" className="h-8 w-8" />
+          </a>
           <div className="leading-none">
-            <h1 className="text-[13.5px] font-bold tracking-[0.12em] text-fg">P3BENCH</h1>
-            <p className="mt-1 text-[9.5px] uppercase tracking-[0.16em] text-dim">Config studio · web</p>
+            <h1 className="text-[20px] font-bold tracking-[-0.04em] text-fg">P3Bench</h1>
+            <p className="mt-1 font-mono text-[8px] uppercase tracking-[0.18em] text-dim">Configuration studio</p>
           </div>
         </div>
 
@@ -285,7 +285,7 @@ P3OrbitBridge.exe --open`}
           >
             {rightTab === "hex" ? "Bytes" : "Plan"}
             {state.staged && rightTab === "plan" && (
-              <span className="rounded bg-[#2a1c12] px-1 font-mono text-[10px] text-acc">{state.staged.changes.length}</span>
+              <span className="rounded bg-[#fff0e3] px-1 font-mono text-[10px] text-acc">{state.staged.changes.length}</span>
             )}
           </Button>
           <Button size="sm" variant="ghost" onClick={() => setLogOpen((open) => !open)} icon={<Icon name="terminal" className="h-3.5 w-3.5" />}>
@@ -298,11 +298,11 @@ P3OrbitBridge.exe --open`}
       </header>
 
       {state.warnings.length > 0 && (
-        <div className="flex h-8 shrink-0 items-center gap-2 border-b border-[#3d3319] bg-[#191509] px-4 text-[10.5px] text-warn">
+        <div className="flex min-h-9 shrink-0 items-center gap-2 border-b border-[#eadbb7] bg-[#fff9ed] px-5 py-2 text-[11px] text-warn">
           <Icon name="warn" className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{state.warnings[0]}</span>
           {state.warnings.length > 1 && (
-            <span className="shrink-0 text-[#8a7534]" title={state.warnings.slice(1).join("\n")}>
+            <span className="shrink-0 text-[#876321]" title={state.warnings.slice(1).join("\n")}>
               +{state.warnings.length - 1} more
             </span>
           )}
@@ -317,9 +317,17 @@ P3OrbitBridge.exe --open`}
         <div
           className={cx(
             "z-40 shrink-0 lg:static lg:block",
-            setupOpen ? "fixed inset-y-0 left-0 block shadow-2xl shadow-black/60" : "hidden lg:block"
+            setupOpen ? "fixed inset-y-0 left-0 block shadow-2xl shadow-black/10" : "hidden lg:block"
           )}
         >
+          <button
+            type="button"
+            aria-label="Close setup"
+            onClick={() => setSetupOpen(false)}
+            className="absolute right-3 top-3 z-50 flex h-7 w-7 items-center justify-center border border-line bg-panel text-mut lg:hidden"
+          >
+            <Icon name="x" className="h-3.5 w-3.5" />
+          </button>
           <Sidebar
             state={state}
             busy={busy}
@@ -365,8 +373,8 @@ P3OrbitBridge.exe --open`}
         )}
         <aside
           className={cx(
-            "z-40 w-[372px] max-w-[92vw] shrink-0 flex-col border-l border-line bg-panel lg:static lg:flex",
-            panelOpen ? "fixed inset-y-0 right-0 flex shadow-2xl shadow-black/60" : "hidden lg:flex"
+            "studio-inspector z-40 w-[340px] max-w-[92vw] shrink-0 flex-col border-l border-line bg-panel lg:static lg:flex",
+            panelOpen ? "fixed inset-y-0 right-0 flex shadow-2xl shadow-black/10" : "hidden lg:flex"
           )}
         >
           <div className="flex h-[46px] shrink-0 items-center gap-1 border-b border-line px-3">
@@ -382,11 +390,11 @@ P3OrbitBridge.exe --open`}
                 <Icon name={tab === "plan" ? "check" : "hex"} className="h-3.5 w-3.5" />
                 {tab === "plan" ? "Write plan" : "Bytes"}
                 {tab === "plan" && state.staged && (
-                  <span className="rounded bg-[#2a1c12] px-1 font-mono text-[10px] text-acc">{state.staged.changes.length}</span>
+                  <span className="rounded bg-[#fff0e3] px-1 font-mono text-[10px] text-acc">{state.staged.changes.length}</span>
                 )}
               </button>
             ))}
-            <span className="ml-auto font-mono text-[10px] text-[#4d5865]">{state.catalog.configLength} B</span>
+            <span className="ml-auto font-mono text-[10px] text-[#737c71]">{state.catalog.configLength} B</span>
             <button
               onClick={() => setPanelOpen(false)}
               className="ml-1 rounded p-1 text-dim hover:text-fg lg:hidden"
@@ -426,12 +434,12 @@ P3OrbitBridge.exe --open`}
         }}
       />
 
-      <footer className="flex h-8 shrink-0 items-center gap-3 border-t border-line bg-panel px-4 font-mono text-[10px] text-[#546170]">
+      <footer className="flex h-8 shrink-0 items-center gap-3 border-t border-line bg-panel px-4 font-mono text-[10px] text-[#70796e]">
         <button onClick={() => setLogOpen((open) => !open)} className="flex items-center gap-1.5 hover:text-mut">
           <Icon name="terminal" className="h-3 w-3" />
           {lastLog ? (
             <span className="max-w-[520px] truncate">
-              <span className={lastLog.level === "error" ? "text-bad" : lastLog.level === "warn" ? "text-warn" : "text-[#7a8797]"}>
+              <span className={lastLog.level === "error" ? "text-bad" : lastLog.level === "warn" ? "text-warn" : "text-[#5d675a]"}>
                 {lastLog.text}
               </span>
             </span>
@@ -441,9 +449,9 @@ P3OrbitBridge.exe --open`}
         </button>
         <span className="ml-auto flex items-center gap-3">
           <span>{params.length} params</span>
-          <span className="text-[#37424f]">|</span>
+          <span className="text-[#c2c7bf]">|</span>
           <span>bridge {state.bridge.version}</span>
-          <span className="text-[#37424f]">|</span>
+          <span className="text-[#c2c7bf]">|</span>
           <span>local only</span>
         </span>
       </footer>
@@ -464,10 +472,10 @@ P3OrbitBridge.exe --open`}
         <div
           key={toast.id}
           className={cx(
-            "fixed bottom-12 left-1/2 z-50 flex max-w-xl -translate-x-1/2 items-start gap-2 rounded-md border px-3.5 py-2.5 text-[12px] shadow-xl shadow-black/50",
+            "fixed bottom-12 left-1/2 z-50 flex max-w-xl -translate-x-1/2 items-start gap-2 rounded-md border px-3.5 py-2.5 text-[12px] shadow-xl shadow-black/10",
             toast.tone === "ok"
-              ? "border-[#1f4a3a] bg-[#102019] text-ok"
-              : "border-[#4d2726] bg-[#241413] text-[#ffb3b3]"
+              ? "border-[#c4e1d0] bg-[#eff8f3] text-ok"
+              : "border-[#ecc9c2] bg-[#fff1ef] text-[#af3e30]"
           )}
         >
           <Icon name={toast.tone === "ok" ? "check" : "warn"} className="mt-0.5 h-3.5 w-3.5 shrink-0" />

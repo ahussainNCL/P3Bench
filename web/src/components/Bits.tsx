@@ -25,10 +25,10 @@ export function Button({
     "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acc";
   const sizes = size === "sm" ? "h-7 px-2.5 text-[12px]" : "h-9 px-3.5 text-[13px]";
   const variants = {
-    primary: "bg-acc text-[#20140a] hover:bg-acc2 font-semibold",
-    outline: "border border-line2 bg-panel2 text-fg hover:border-[#3d4a58] hover:bg-[#1b222a]",
+    primary: "bg-[#1c211b] text-white hover:bg-[#353d31] font-semibold",
+    outline: "border border-line2 bg-panel2 text-fg hover:border-[#b8beb7] hover:bg-[#f1f2ef]",
     ghost: "text-mut hover:text-fg hover:bg-panel2",
-    danger: "border border-[#58302f] bg-[#241716] text-bad hover:bg-[#2d1b1a]",
+    danger: "border border-[#e6bdb4] bg-[#fff3f1] text-bad hover:bg-[#ffe8e2]",
   }[variant];
 
   return (
@@ -61,10 +61,10 @@ export function Badge({
 }) {
   const tones = {
     neutral: "border-line2 bg-panel2 text-mut",
-    ok: "border-[#1f4a3a] bg-[#12231d] text-ok",
-    warn: "border-[#4d4020] bg-[#241f10] text-warn",
-    bad: "border-[#4d2726] bg-[#241413] text-bad",
-    acc: "border-[#54331d] bg-[#26190f] text-acc",
+    ok: "border-[#c4e1d0] bg-[#eef8f2] text-ok",
+    warn: "border-[#e4cfa1] bg-[#fff8e8] text-warn",
+    bad: "border-[#ecc9c2] bg-[#fff1ef] text-bad",
+    acc: "border-[#edcfb5] bg-[#fff1e5] text-acc",
   }[tone];
   return (
     <span
@@ -101,7 +101,7 @@ export function Switch({
       onClick={() => onChange(!checked)}
       className={cx(
         "relative h-6 w-11 shrink-0 rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-40",
-        checked ? "border-[#7a4a22] bg-acc" : "border-line2 bg-[#1d242c]"
+        checked ? "border-[#cf783a] bg-acc" : "border-line2 bg-[#d9ddd8]"
       )}
     >
       <span

@@ -43,7 +43,7 @@ export default function Sidebar({
   const params = state.catalog.groups.reduce((sum, g) => sum + g.params.length, 0);
 
   return (
-    <aside className="flex min-h-0 w-[304px] shrink-0 flex-col overflow-y-auto border-r border-line bg-panel">
+    <aside className="studio-sidebar flex h-full min-h-0 w-[264px] shrink-0 flex-col overflow-y-auto border-r border-line bg-panel">
       <Section
         title="Connection"
         right={
@@ -51,7 +51,7 @@ export default function Sidebar({
             <span
               className={cx(
                 "h-1.5 w-1.5 rounded-full",
-                connected ? "bg-ok live-dot" : state.connection.state === "adapter-open" ? "bg-warn" : "bg-[#3a444f]"
+                connected ? "bg-ok live-dot" : state.connection.state === "adapter-open" ? "bg-warn" : "bg-[#a0a79e]"
               )}
             />
             {state.connection.state.replace("-", " ")}
@@ -91,7 +91,7 @@ export default function Sidebar({
                   className={cx(
                     "w-full rounded border px-2.5 py-2 text-left transition-colors disabled:cursor-not-allowed",
                     adapter.library === state.adapter?.library
-                      ? "border-[#4a3524] bg-[#1d1712]"
+                      ? "border-[#edd1b9] bg-[#fff5eb]"
                       : "border-line bg-panel2 hover:border-line2"
                   )}
                 >
@@ -128,7 +128,7 @@ export default function Sidebar({
             </div>
 
             {state.connection.error && (
-              <p className="rounded border border-[#4d2726] bg-[#1d1211] px-2.5 py-2 font-mono text-[10.5px] leading-relaxed text-bad">
+              <p className="rounded border border-[#ecc9c2] bg-[#fff3f1] px-2.5 py-2 font-mono text-[10.5px] leading-relaxed text-bad">
                 {state.connection.error}
               </p>
             )}
@@ -223,7 +223,7 @@ export default function Sidebar({
             The bridge sends identity reads only. Config writes are simulator-only until a profile is verified on a car.
           </p>
         </div>
-        <p className="mt-3 text-[10px] leading-relaxed text-[#4d5865]">
+        <p className="mt-3 text-[10px] leading-relaxed text-[#737c71]">
           Not affiliated with Volvo, OrBit or any dealer tool. No vehicle data is transmitted anywhere.
         </p>
       </div>

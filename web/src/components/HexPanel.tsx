@@ -100,7 +100,7 @@ export default function HexPanel({ state, dump, staged, onExport }: Props) {
 
       <div className="min-h-0 flex-1 overflow-auto px-3 py-3 font-mono text-[10.5px] leading-[18px]">
         <div className="inline-block">
-          <div className="mb-1 flex text-[9px] text-[#3f4954]">
+          <div className="mb-1 flex text-[9px] text-[#747d72]">
             <span className="w-8" />
             {Array.from({ length: 16 }, (_, i) => (
               <span key={i} className="w-[17px] text-center">
@@ -110,7 +110,7 @@ export default function HexPanel({ state, dump, staged, onExport }: Props) {
           </div>
           {Array.from({ length: rows }, (_, row) => (
             <div key={row} className="flex items-center">
-              <span className="w-8 pr-1.5 text-right text-[9.5px] text-[#4a5561]">
+              <span className="w-8 pr-1.5 text-right text-[9.5px] text-[#737c71]">
                 {`${(row * 16).toString(16).toUpperCase().padStart(3, "0")}`}
               </span>
               {Array.from({ length: 16 }, (_, col) => {
@@ -127,12 +127,12 @@ export default function HexPanel({ state, dump, staged, onExport }: Props) {
                     className={cx(
                       "w-[17px] cursor-default text-center",
                       isChanged
-                        ? "rounded-sm bg-acc font-medium text-[#1a1008]"
+                        ? "rounded-sm bg-acc font-medium text-[#fff0e2]"
                         : isChecksum
                           ? "rounded-sm text-ok ring-1 ring-ok/50"
                           : isParam
-                            ? "text-[#b9c4d0]"
-                            : "text-[#5b6673]",
+                            ? "text-[#404b3e]"
+                            : "text-[#727b70]",
                       hover === index && !isChanged && "rounded-sm bg-panel2 text-fg"
                     )}
                   >

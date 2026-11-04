@@ -41,7 +41,7 @@ function Control({
   onChange: (next: Value) => void;
 }) {
   const inputClass =
-    "h-8 rounded border border-line2 bg-panel2 px-2 font-mono text-[12px] text-fg outline-none transition-colors focus:border-[#6b4a2d] focus:ring-2 focus:ring-acc/20";
+    "h-8 rounded border border-line2 bg-panel2 px-2 font-mono text-[12px] text-fg outline-none transition-colors focus:border-[#c97c43] focus:ring-2 focus:ring-acc/20";
 
   if (param.type === "bool") {
     return (
@@ -63,7 +63,7 @@ function Control({
               className={cx(
                 "h-7 rounded border px-2.5 text-[11.5px] transition-colors",
                 value === option.value
-                  ? "border-[#6b4a2d] bg-[#26190f] text-acc"
+                  ? "border-[#c97c43] bg-[#fff1e5] text-acc"
                   : "border-line bg-panel2 text-mut hover:border-line2 hover:text-fg"
               )}
             >
@@ -136,7 +136,7 @@ function Row({
     <div
       className={cx(
         "grid grid-cols-1 items-center gap-3 border-b border-line/60 px-6 py-3.5 transition-colors md:grid-cols-[1fr_272px] md:gap-5",
-        dirty ? "bg-[#17120d]" : "hover:bg-panel/50"
+        dirty ? "bg-[#fff8f1]" : "hover:bg-panel/50"
       )}
     >
       <div className="min-w-0">
@@ -150,17 +150,17 @@ function Row({
           )}
         </div>
         {param.description && <p className="mt-0.5 truncate text-[11.5px] text-dim">{param.description}</p>}
-        <div className="mt-1 flex items-center gap-3 font-mono text-[10px] text-[#55616e]">
+        <div className="mt-1 flex items-center gap-3 font-mono text-[10px] text-[#6e776c]">
           <span>0x{param.offset.toString(16).toUpperCase().padStart(3, "0")}</span>
           <span>{typeLabel(param)}</span>
-          <span className="truncate text-[#414b56]">{param.id}</span>
+          <span className="truncate text-[#7c8579]">{param.id}</span>
         </div>
       </div>
 
       <div className="flex items-center justify-end gap-3">
         {dirty && current !== undefined && (
           <span className="shrink-0 text-right font-mono text-[10px] leading-tight text-dim">
-            <span className="block text-[#4c5763]">was</span>
+            <span className="block text-[#727b70]">was</span>
             {param.display}
           </span>
         )}
@@ -199,8 +199,8 @@ function GroupSection({
   if (params.length === 0) return null;
 
   return (
-    <section>
-      <header className="sticky top-0 z-10 flex items-baseline gap-3 border-y border-line bg-ink/95 px-6 py-2.5 backdrop-blur">
+    <section className="studio-group">
+      <header className="sticky top-0 z-10 flex items-baseline gap-3 border-b border-line bg-panel/95 px-6 py-4 backdrop-blur">
         <h3 className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-fg">{group.label}</h3>
         <span className="font-mono text-[10.5px] text-dim">{params.length}</span>
         {group.description && <p className="ml-auto truncate text-[11px] text-dim">{group.description}</p>}
@@ -227,8 +227,8 @@ function EmptyState({
 }) {
   return (
     <div className="grid-lines flex min-h-0 flex-1 items-center justify-center p-8">
-      <div className="w-full max-w-md rounded-lg border border-line bg-panel/90 p-7 shadow-2xl shadow-black/40">
-        <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-md border border-[#4a3524] bg-[#1d1712] text-acc">
+      <div className="w-full max-w-md rounded-lg border border-line bg-panel/90 p-7 shadow-2xl shadow-black/5">
+        <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-md border border-[#edd1b9] bg-[#fff5eb] text-acc">
           <Icon name="hex" className="h-5 w-5" />
         </div>
         <h2 className="text-[17px] font-semibold text-fg">No config block loaded</h2>
@@ -255,13 +255,13 @@ function EmptyState({
         </div>
 
         {!state.capabilities.read && state.capabilities.reason && (
-          <p className="mt-4 rounded border border-[#4d4020] bg-[#1f1a0f] px-3 py-2 text-[11px] leading-relaxed text-warn">
+          <p className="mt-4 rounded border border-[#e4cfa1] bg-[#fff9ed] px-3 py-2 text-[11px] leading-relaxed text-warn">
             {state.capabilities.reason}
           </p>
         )}
 
         {dump === null && (
-          <p className="mt-4 font-mono text-[10.5px] leading-relaxed text-[#4d5865]">
+          <p className="mt-4 font-mono text-[10.5px] leading-relaxed text-[#737c71]">
             catalog {state.catalog.id} · {state.catalog.configLength} bytes · checksum{" "}
             {state.catalog.checksum?.enabled ? `sum @ ${state.catalog.checksum.byteIndex}` : "off"}
           </p>
@@ -293,9 +293,10 @@ export default function ConfigPanel({
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-ink">
-      <div className="flex shrink-0 flex-col gap-2.5 border-b border-line bg-panel/60 px-4 py-3 sm:px-6 xl:flex-row xl:items-center xl:gap-3">
+      <div className="studio-toolbar flex shrink-0 flex-col gap-4 border-b border-line bg-panel px-4 py-5 sm:px-6">
         <div className="mr-2 shrink-0">
-          <h2 className="text-[13px] font-semibold text-fg">Configuration</h2>
+          <span className="mb-1.5 block font-mono text-[8px] uppercase tracking-[0.16em] text-dim">Your configuration, clearly in view</span>
+          <h2 className="text-[25px] font-semibold tracking-[-0.04em] text-fg">Configuration workspace</h2>
           <p className="text-[10.5px] text-dim">
             {dump ? `${dump.length} bytes · ${dump.source}` : "nothing loaded"}
             {checksumOk === true && <span className="ml-2 text-ok">checksum ok</span>}
@@ -303,14 +304,14 @@ export default function ConfigPanel({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 xl:ml-auto">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
             <Icon name="list" className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-dim" />
             <input
               value={filter}
               onChange={(e) => onFilter(e.target.value)}
               placeholder="Filter parameters"
-              className="h-8 w-40 rounded border border-line bg-ink pl-8 pr-2.5 text-[12px] text-fg outline-none placeholder:text-[#4d5865] focus:border-line2 sm:w-52"
+              className="h-8 w-40 rounded border border-line bg-ink pl-8 pr-2.5 text-[12px] text-fg outline-none placeholder:text-[#737c71] focus:border-line2 sm:w-52"
             />
           </div>
 
@@ -319,7 +320,7 @@ export default function ConfigPanel({
             disabled={pending === 0}
             className={cx(
               "h-8 rounded border px-2.5 text-[11.5px] transition-colors disabled:opacity-40",
-              pendingOnly ? "border-[#6b4a2d] bg-[#26190f] text-acc" : "border-line bg-panel2 text-mut hover:text-fg"
+              pendingOnly ? "border-[#c97c43] bg-[#fff1e5] text-acc" : "border-line bg-panel2 text-mut hover:text-fg"
             )}
           >
             Pending <span className="font-mono">{pending}</span>
@@ -355,7 +356,7 @@ export default function ConfigPanel({
       {!dump ? (
         <EmptyState dump={dump} state={state} onRead={onRead} onImportDump={onImportDump} busy={busy} />
       ) : (
-        <div className="min-h-0 flex-1 overflow-y-auto pb-10">
+        <div className="studio-groups min-h-0 flex-1 overflow-y-auto p-4 pb-10 sm:p-5">
           {state.catalog.groups.map((group) => (
             <GroupSection
               key={group.id}

@@ -32,7 +32,7 @@ export default function ImportDialog({ mode, busy, error, onSubmit, onClose, con
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="w-full max-w-2xl rounded-lg border border-line bg-panel shadow-2xl shadow-black/60"
+        className="w-full max-w-2xl rounded-lg border border-line bg-panel shadow-2xl shadow-black/10"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between border-b border-line px-5 py-4">
@@ -60,7 +60,7 @@ export default function ImportDialog({ mode, busy, error, onSubmit, onClose, con
               onChange={(e) => setText(e.target.value)}
               spellCheck={false}
               placeholder={mode === "dump" ? "C8 0C 7B 92 20 56 86 7F …" : '{ "id": "my.p3", "configLength": 254, "groups": [ … ] }'}
-              className="h-56 w-full resize-none rounded border border-line2 bg-ink px-3 py-2 font-mono text-[11.5px] leading-relaxed text-fg outline-none placeholder:text-[#414b56] focus:border-[#6b4a2d]"
+              className="h-56 w-full resize-none rounded border border-line2 bg-ink px-3 py-2 font-mono text-[11.5px] leading-relaxed text-fg outline-none placeholder:text-[#7c8579] focus:border-[#c97c43]"
             />
           </Field>
 
@@ -72,14 +72,14 @@ export default function ImportDialog({ mode, busy, error, onSubmit, onClose, con
           )}
 
           {error && (
-            <p className="mt-3 rounded border border-[#4d2726] bg-[#1d1211] px-3 py-2 font-mono text-[11px] leading-relaxed text-bad">
+            <p className="mt-3 rounded border border-[#ecc9c2] bg-[#fff3f1] px-3 py-2 font-mono text-[11px] leading-relaxed text-bad">
               {error}
             </p>
           )}
         </div>
 
         <div className="flex items-center justify-between border-t border-line px-5 py-3">
-          <p className="font-mono text-[10px] text-[#4d5865]">
+          <p className="font-mono text-[10px] text-[#737c71]">
             {text.trim() ? `${text.trim().length.toLocaleString()} characters` : "nothing pasted"}
           </p>
           <div className="flex gap-2">

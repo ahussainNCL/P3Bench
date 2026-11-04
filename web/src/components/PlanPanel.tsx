@@ -74,7 +74,7 @@ export default function PlanPanel({
               {staged.id} · {staged.changedBytes} byte{staged.changedBytes === 1 ? "" : "s"} differ
             </p>
             {stale && (
-              <p className="mt-2 rounded border border-[#4d4020] bg-[#1f1a0f] px-2 py-1.5 text-[10.5px] leading-relaxed text-warn">
+              <p className="mt-2 rounded border border-[#e4cfa1] bg-[#fff9ed] px-2 py-1.5 text-[10.5px] leading-relaxed text-warn">
                 The editor changed after this plan was built. Preview again before applying.
               </p>
             )}
@@ -90,11 +90,11 @@ export default function PlanPanel({
                   </span>
                 </div>
                 <div className="mt-1 flex items-center gap-1.5 font-mono text-[10.5px]">
-                  <span className="rounded bg-[#1b1f25] px-1.5 py-0.5 text-mut line-through decoration-[#5a3a35]">
+                  <span className="rounded bg-[#f0f1ee] px-1.5 py-0.5 text-mut line-through decoration-[#ad7067]">
                     {change.oldHex}
                   </span>
                   <span className="text-dim">→</span>
-                  <span className="rounded bg-[#241a12] px-1.5 py-0.5 text-acc">{change.newHex}</span>
+                  <span className="rounded bg-[#fff1e5] px-1.5 py-0.5 text-acc">{change.newHex}</span>
                   {change.kind === "checksum" && <Badge tone="ok">recomputed</Badge>}
                 </div>
                 <p className="mt-1 truncate text-[10.5px] text-dim">
@@ -115,7 +115,7 @@ export default function PlanPanel({
                     value={confirm}
                     onChange={(e) => onConfirm(e.target.value)}
                     placeholder="APPLY"
-                    className="h-9 min-w-0 flex-1 rounded border border-line2 bg-ink px-2.5 font-mono text-[12px] tracking-[0.2em] text-fg outline-none placeholder:text-[#414b56] focus:border-[#6b4a2d]"
+                    className="h-9 min-w-0 flex-1 rounded border border-line2 bg-ink px-2.5 font-mono text-[12px] tracking-[0.2em] text-fg outline-none placeholder:text-[#7c8579] focus:border-[#c97c43]"
                     spellCheck={false}
                     autoComplete="off"
                   />
@@ -136,7 +136,7 @@ export default function PlanPanel({
                 </div>
               </>
             ) : (
-              <div className="rounded border border-[#4d2726] bg-[#1d1211] px-2.5 py-2">
+              <div className="rounded border border-[#ecc9c2] bg-[#fff3f1] px-2.5 py-2">
                 <p className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-bad">
                   <Icon name="warn" className="h-3.5 w-3.5" /> writes disabled
                 </p>
@@ -146,7 +146,7 @@ export default function PlanPanel({
                 </button>
               </div>
             )}
-            <p className="mt-2 text-[10px] text-[#414b56]">
+            <p className="mt-2 text-[10px] text-[#7c8579]">
               Export the read block: <Kbd>Ctrl</Kbd> <Kbd>S</Kbd>
             </p>
           </div>

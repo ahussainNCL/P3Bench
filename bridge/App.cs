@@ -151,13 +151,6 @@ namespace P3Orbit
             return count;
         }
 
-        // True when any of the active data is invented. Used for warnings and to
-        // keep the write gate honest.
-        private bool SyntheticData
-        {
-            get { return (profile != null && profile.synthetic) || (catalog != null && catalog.synthetic); }
-        }
-
         private static Dictionary<string, object> D(params object[] pairs)
         {
             var result = new Dictionary<string, object>(pairs.Length / 2);
@@ -175,14 +168,17 @@ namespace P3Orbit
                 var warnings = new List<string>();
                 if (catalog.synthetic)
                     warnings.Add("The active catalog is synthetic: parameter names, offsets and values are invented for the demo.");
-                if (SyntheticData)
+                if (mode == "simulator")
                     warnings.Add("Simulator mode: no adapter or vehicle is connected. Nothing here comes from a car.");
-                if (!SyntheticData && (profile == null || !profile.validated))
+                if (mode == "hardware" && profile != null && !profile.validated)
                     warnings.Add("Active profile is not vehicle-validated. Config reads and writes are restricted.");
+                if (dump != null && dump.checksumFailed(catalog))
+                    warnings.Add("The loaded block fails its own checksum. It can be inspected, but changes cannot be staged until a valid block is loaded.");
 
                 bool canRead = profile != null && profile.read != null &&
                     (profile.read.method == "simulator" || profile.read.method == "did");
                 bool canApply = mode == "simulator";
+                bool canUndo = mode == "simulator" && undoStack.Count > 0;
                 string applyReason = canApply
                     ? "Simulator: applies to the in-memory block only."
                     : "Hardware writes are not implemented. The bridge refuses to write to a vehicle.";
@@ -217,6 +213,8 @@ namespace P3Orbit
                         "read", canRead,
                         "apply", canApply,
                         "applyReason", applyReason,
+                        "undo", canUndo,
+                        "undoDepth", undoStack.Count,
                         "reason", canRead ? null : (profile == null || profile.read == null ? "No read method." : profile.read.note)),
                     "catalogSource", catalogSource);
             }
